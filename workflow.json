@@ -1,0 +1,548 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -144,
+        -128
+      ],
+      "id": "a7513114-a2b8-42f6-ae0d-194f8b3e7a54",
+      "name": "Telegram Trigger",
+      "webhookId": "ff4bc73b-1073-4004-ac7d-16f7c32f8b3e",
+      "credentials": {
+        "telegramApi": {
+          "id": "GUEM6PaSlZTImN2r",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text ?? $json.message.text }}",
+        "options": {
+          "systemMessage": " IMPORTANT RULE: Jab bhi \"Get row(s) in sheet\" tool se order ka status \"Delayed\" aaye, tumhe MANDATORY roop se ek doosra tool \"Append row in sheet in Google Sheets\" (complaint_log wala) bhi turant call karna hai — customer ko jawab dene se pehle ya turant baad. Isme order_id, customer_name, aur issue mein \"Order delivery delayed\" bharo. Ye step kabhi skip mat karo agar status Delayed ho."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1040,
+        -128
+      ],
+      "id": "cd48ee75-9e0a-4458-8f54-3d0044445208",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "= {{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "contextWindowLength": 2
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        1104,
+        96
+      ],
+      "id": "7d8a8232-411a-4fb7-8b02-c940cd65bfda",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id }}",
+        "text": "= {{ $('AI Agent').item.json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1664,
+        -128
+      ],
+      "id": "81892297-2785-495d-8eb7-8040c62b9717",
+      "name": "Send a text message",
+      "webhookId": "2611754e-d548-4d9e-9e7c-a41cdb3d98d8",
+      "credentials": {
+        "telegramApi": {
+          "id": "GUEM6PaSlZTImN2r",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        976,
+        96
+      ],
+      "id": "37d80ab1-e229-473e-a078-ed77da0d1e04",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "lcpfMrRSJhyorfVJ",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1BEBfNzmpKezur1p-psGX8GfoSQ2poWSXInU2FZ6pJhw",
+          "mode": "list",
+          "cachedResultName": "my bot data ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1BEBfNzmpKezur1p-psGX8GfoSQ2poWSXInU2FZ6pJhw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1BEBfNzmpKezur1p-psGX8GfoSQ2poWSXInU2FZ6pJhw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $('Telegram Trigger').item.json.message.from.first_name }}",
+            "massage": "=User: {{ $('Telegram Trigger').item.json.message.text }} | Nova: {{ $('AI Agent').item.json.output }}",
+            "date": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "massage",
+              "displayName": "massage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1440,
+        -128
+      ],
+      "id": "497241a4-8130-4ad4-af3d-36aefbbcd85b",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6e3J8TRjKTs6Dmmj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8f793663-e9dd-4786-9d07-03c98962b9a9",
+              "leftValue": "={{ $json.message.voice }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        80,
+        -128
+      ],
+      "id": "d9c88bf1-a69f-475a-874b-9f57ffc8fadf",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        -208
+      ],
+      "id": "dd28e86f-e48d-444d-92e4-33994ccf9ea5",
+      "name": "Get a file",
+      "webhookId": "420b47c1-ad7d-47e0-95d2-24f8a3f8402f",
+      "credentials": {
+        "telegramApi": {
+          "id": "GUEM6PaSlZTImN2r",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/transcriptions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "=data"
+            },
+            {
+              "name": "model",
+              "value": "whisper-large-v3"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        752,
+        -208
+      ],
+      "id": "cab91ce6-4245-4962-9621-f40df4637344",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "CIsMW2AV0g8bO7bQ",
+          "name": "Bearer Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nfor (const item of items) {\n  const bin = item.binary.data;\n  item.binary.data = {\n    ...bin,\n    fileName: 'audio.ogg',\n    mimeType: 'audio/ogg',\n    fileExtension: 'ogg',\n  };\n}\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        -208
+      ],
+      "id": "d8ec13d4-f063-40e5-b711-d961c44139b1",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": " Use this tool to log a complaint when a customer's order status is \"Delayed\". Call this tool after informing the customer about the delay, using their order_id, customer_name, and a brief issue description.",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1E2AIZsFskiTVMQ-Te2enBPWo53ArZF_3kKze97VfnO8",
+          "mode": "list",
+          "cachedResultName": "nova workflowsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1E2AIZsFskiTVMQ-Te2enBPWo53ArZF_3kKze97VfnO8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 634142613,
+          "mode": "list",
+          "cachedResultName": "complaint_log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1E2AIZsFskiTVMQ-Te2enBPWo53ArZF_3kKze97VfnO8/edit#gid=634142613"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "order_id": "= {{ $fromAI('order_id', 'The order ID of the delayed order', 'string') }}",
+            "customer_name": "= {{ $fromAI('customer_name', 'The name of the customer', 'string') }}",
+            "issue": "={{ $fromAI('issue', 'Brief description of the delay issue', 'string') }}",
+            "logged_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "order_id",
+              "displayName": "order_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer_name",
+              "displayName": "customer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "issue",
+              "displayName": "issue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "logged_at",
+              "displayName": "logged_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1264,
+        224
+      ],
+      "id": "e5a992e4-d9ef-42fe-bd30-0d1296b6a0d9",
+      "name": "Log Complaint",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6e3J8TRjKTs6Dmmj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get row(s) in sheet in Google Sheets Use this tool to look up a customer's order status by their order ID. Returns customer name, product, delivery status, and expected delivery date.",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1E2AIZsFskiTVMQ-Te2enBPWo53ArZF_3kKze97VfnO8"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1E2AIZsFskiTVMQ-Te2enBPWo53ArZF_3kKze97VfnO8/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "order_id",
+              "lookupValue": "={{ $fromAI('order_id', 'The order ID number the customer wants to check', 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1440,
+        128
+      ],
+      "id": "82cf8b20-2770-4e45-b716-1dac15fd3b3f",
+      "name": " Lookup Order Status",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6e3J8TRjKTs6Dmmj",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Complaint": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    " Lookup Order Status": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0cbb27b21699d9567cf3da366b0fcb89eb8fd284d63d9d6c9d58d65d488c8a93"
+  }
+}
